@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
+import * as github from '@actions/github'
 
 /**
  * The main function for the action.
@@ -7,18 +7,33 @@ import { wait } from './wait'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const routesPaths: string = core.getInput('routesPaths')
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    if (!routesPaths) {
+      throw new Error('routesPaths input is required')
+    }
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const token = core.getInput('github-token')
+    const octokit = github.getOctokit(token)
+    
+    const paths = routesPaths.split(',')
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    const owner = github.context.repo.owner
+    const repo = github.context.repo.repo
+
+    const fileData = paths.map(async (path) => {
+      const { data } = await octokit.rest.repos.getContent({
+        owner,
+        repo,
+        path
+      })
+      return data;
+    })
+    
+    core.info(JSON.stringify(fileData))
+
+    core.setOutput('data', fileData)
+
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
