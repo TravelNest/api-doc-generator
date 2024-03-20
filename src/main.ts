@@ -15,25 +15,24 @@ export async function run(): Promise<void> {
 
     const token = core.getInput('github-token')
     const octokit = github.getOctokit(token)
-    
+
     const paths = routesPaths.split(',')
 
     const owner = github.context.repo.owner
     const repo = github.context.repo.repo
 
-    const fileData = paths.map(async (path) => {
+    const fileData = paths.map(async path => {
       const { data } = await octokit.rest.repos.getContent({
         owner,
         repo,
         path
       })
-      return data;
+      return data
     })
-    
+
     core.info(JSON.stringify(fileData))
 
     core.setOutput('data', fileData)
-
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

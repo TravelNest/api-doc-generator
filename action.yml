@@ -1,5 +1,6 @@
 name: 'API docs generator'
-description: 'Generate OpenAPI and markdown API documentation based on routes files.'
+description:
+  'Generate OpenAPI and markdown API documentation based on routes files.'
 author: 'Your name or organization here'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
